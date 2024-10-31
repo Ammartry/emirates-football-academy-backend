@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String    @id @default(uuid())
+  email       String    @unique
+  password    String
+  name        String
+  role        Role      @default(STAFF)
+  permissions String[]
+  status      Status    @default(ACTIVE)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  notes       Note[]
+}
+
+model Player {
+  id                String     @id @default(uuid())
+  registrationId    String     @unique // EFA-YYYY-XXX format
+  name              String
+  birthDate         DateTime
+  nationality       String
+  playerType        PlayerType
+  photo            String?
+  idCard           String?
+  uniformSize      String
+  transport        Boolean     @default(false)
+  parentName       String
+  parentEmail      String
+  parentPhone      String
+  status           Status      @default(ACTIVE)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  subscriptions    Subscription[]
+  notes            Note[]
+}
+
+model Subscription {
+  id              String    @id @default(uuid())
+  playerId        String
+  player          Player    @relation(fields: [playerId], references: [id])
+  startDate       DateTime
+  endDate         DateTime
+  amount          Float
+  transportFee    Float?
+  uniformFee      Float?
+  status          Status
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  payments        Payment[]
+}
+
+model Payment {
+  id              String       @id @default(uuid())
+  subscriptionId  String
+  subscription    Subscription @relation(fields: [subscriptionId], references: [id])
+  amount          Float
+  type            PaymentType
+  status          Status
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
+
+model Note {
+  id        String   @id @default(uuid())
+  playerId  String
+  player    Player   @relation(fields: [playerId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  message   String
+  type      NoteType
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SystemSettings {
+  id            String   @id @default(uuid())
+  monthlyFee    Float
+  uniformFee    Float
+  transportFee  Float
+  vatRate       Float
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+enum Role {
+  ADMIN
+  COACH
+  STAFF
+}
+
+enum PlayerType {
+  CITIZEN
+  RESIDENT
+  BORN
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+  EXPIRED
+  PENDING
+}
+
+enum PaymentType {
+  SUBSCRIPTION
+  UNIFORM
+  TRANSPORT
+}
+
+enum NoteType {
+  FEEDBACK
+  ALERT
+}

@@ -1,0 +1,11 @@
+[build]
+builder = "nixpacks"
+buildCommand = "npm install"
+
+[deploy]
+startCommand = "npm run start"
+healthcheckPath = "/api/health"
+restartPolicyType = "on-failure"
+
+[deploy.envs]
+NODE_ENV = "production"
